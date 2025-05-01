@@ -7,9 +7,12 @@ All python scripts are formatted to be open in a JupyterLab notebook using the J
 The experiments were run on a NVIDIA GeForce RTX 4090 or NVIDIA RTX 6000 Ada Generation for the Parabellum evaluations (including CLIP) but the main algorithm GAME runs on CPU with no acceleration. 
 Expected time for the paper paramaters (20 generations, 100k evaluations/genration) 72h-120h + 12h-48h for the intergenerational-tournament.
 
+## Videos
+* figure_1.mp4: We propose an enriched video for the Figure 1, with additional behaviors.
+* a.txt to o.txt: behavior trees used in the different duels and the list of atomics used. 
 
 ## Main
-* GAME.py: main file containing the GAME algorithm and the interface to Parabellum game
+* GAME.py: main file containing the GAME algorithm and the interface to Parabellum game.  To avoid adding discrepancy, the code contains unused parameters, i.e., the current implementation of Parabellum allows the parametrization of the units positions and types, but the current setting ignores this feature and fixes the initial position and unit types. The current settings are those used to obtain the paper's results.
 * plot_figures.py: file containing the functions to plot the different figures
 * requirements.txt: Pip freeze requirements. Require a CUDA compatible environment. Not everything is needed but everything you need is included.
 
