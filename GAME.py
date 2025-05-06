@@ -1059,16 +1059,16 @@ def get_config(parabellum_config, budget, tasks, n_cells, n_groups, use_embeddin
 
 # %%
 n_tasks = 100  #100
-n_gen = 20  # 20
+n_gen = 0 # 20
 budget = 100_000  # 100_000
-seed_id = 1
+seed_id = 0
 n_cells = 25  # 25
 
 use_boostrap = True
-bias_for_small_BT = True  # True
-use_embedding = True  # True 
-use_diversity_only = False
-use_quality_only = True
+bias_for_small_BT = True  # True for GAME-MO, False for GAME-SO
+use_embedding = True  # False for GAME (no VLM) 
+use_diversity_only = False  
+use_quality_only = False 
 
 assert not use_diversity_only or not use_quality_only
 mini_tournament_size = 5
@@ -1084,100 +1084,104 @@ mini_config = {"n_tasks": n_tasks, "n_gen": n_gen, "budget": budget, "seed_id": 
 # ## GAME
 
 # %%
-# config 
-config = get_config(parabellum_config, budget, None, n_cells, n_groups, 
-                    use_embedding=use_embedding, use_diversity_only=use_diversity_only, use_quality_only=use_quality_only, 
-                    seed_id=seed_id, bias_for_small_BT=bias_for_small_BT)
-main_folder = utils.create_save_folder()
-utils.save_pickle(main_folder + f"/mini_config.pk", mini_config)
-rng = np.random.default_rng(config["seed"])
-# init
-current_bts = sample_n_random_BTs(rng, n_tasks, config['random_sampling_config'])
-bootstrap_evaluations = []
-# main loop
-for gen_id in range(n_gen):
-    print(f"Gen {gen_id}: {len(set([bt['bt'].to_txt() for bt in current_bts]))} different BTs.") 
-    config["save_folder"] = main_folder + f"/gen_{gen_id}/"
-    utils.create_folder(config["save_folder"])
-    config["tasks"] = create_tasks(current_bts, generation=["red", "blue"][gen_id%2])  # gen == atk means optimizing the reds and fixing the blues
-    me = MT_GAME(config)
-    if use_boostrap:
-      me.update_archive(bootstrap_evaluations)
-    # run gen
-    me.run()
-    # compute next gen 
-    elites = [{"fitness": None, "bt": None} for _ in range(n_tasks)]
-    if use_quality_only:
-        for task_id, archive in enumerate(me.archive.archives):
-            for cell_id in range(config["archive_config"]['n_cells']):
-                if cell_id in archive.non_empty_cells:
-                    elites[task_id]["fitness"] = archive.cells_fitness[cell_id]
-                    elites[task_id]["bt"] = archive.cells_solution[cell_id]
-    else:  # Quality and Diversity
-        behaviors = jnp.concatenate([archive.cells_behavior[archive.non_empty_cells] for archive in me.archive.archives])
-        kmeans = KMeans(n_clusters=n_tasks).fit(preprocessing.normalize(behaviors))   # for normalized vectors euclidian distance is equivalent to cosine distance ||x-y||² = 2 (1 - x.y)
-        centroids = kmeans.cluster_centers_
-        tree = cKDTree(centroids)
-        elites_bt_txt = [""] * n_tasks
-        distances_to_centroids = np.ones(n_tasks) * np.inf
-        for task_id, archive in enumerate(me.archive.archives):
-            for cell_id in range(config["archive_config"]['n_cells']):
-                if cell_id in archive.non_empty_cells:
-                    distance, c_id = tree.query(archive.cells_behavior[cell_id]/jnp.linalg.norm(archive.cells_behavior[cell_id]), k=1)
-                    if use_diversity_only:
-                        if distance < distances_to_centroids[c_id] and archive.cells_solution[cell_id]["bt"].to_txt() not in elites_bt_txt:
-                            distances_to_centroids[c_id] = distance 
-                            elites[c_id]["fitness"] = archive.cells_fitness[cell_id]
-                            elites[c_id]["bt"] = archive.cells_solution[cell_id]
-                            elites_bt_txt[c_id] = archive.cells_solution[cell_id]["bt"].to_txt()
-                    else:  # diversity and quality 
-                        if compare_fitness_bt(archive.cells_fitness[cell_id], elites[c_id]["fitness"]) and archive.cells_solution[cell_id]["bt"].to_txt() not in elites_bt_txt:
-                            elites[c_id]["fitness"] = archive.cells_fitness[cell_id]
-                            elites[c_id]["bt"] = archive.cells_solution[cell_id]
-                            elites_bt_txt[c_id] = archive.cells_solution[cell_id]["bt"].to_txt()
-    current_bts = [elite["bt"] for elite in elites if elite["bt"] is not None]
-    # compute tournament
-    if gen_id % 2 == 1:  # blues 
-        blues = current_bts
-        reds = [task for task in me.tasks] 
-    else:
-        reds = current_bts
-        blues = [task for task in me.tasks] 
-    utils.save_pickle(config["save_folder"] + f"elites_{gen_id}.pk", {"reds": reds, "blues": blues})
-    
-    # bootstrap next generation
-    if use_boostrap:
-        tournament = compute_tournament(config, reds, blues)
-        utils.save_pickle(config["save_folder"] + f"tournament_{gen_id}.pk", tournament)
-        bootstrap_evaluations = []
-        for (i,j), val in tournament.items():
-            if gen_id % 2 == 1:  # blues 
-                solution = reds[i]
-                f = [val["eval"]["fitness"][0], -solution["bt"].size]  # blue depleted health 
-                task_id = j
-            else:
-                solution = blues[j]
-                f = [1-val["eval"]["other"][0], -solution["bt"].size]  # red depleted health
-                task_id = i 
-            bootstrap_evaluations.append({"id": -1, "task_id": task_id, "fitness": f, "behavior": val["eval"]["behavior"], "solution": solution})
-    
-        F = make_tournament_plot(len(reds), len(blues), tournament, gen_id, config["save_folder"])
-        if do_mini_tournament:
-            mini_tournament_videos(config["save_folder"], mini_tournament_size, gen_id, tournament, F, n_groups, group_size, config["evaluation_config"]["fixed_starting_sector"], config["evaluation_config"]["fixed_unit_types"])
+if __name__ == "__main__":
+    # config 
+    config = get_config(parabellum_config, budget, None, n_cells, n_groups, 
+                        use_embedding=use_embedding, use_diversity_only=use_diversity_only, use_quality_only=use_quality_only, 
+                        seed_id=seed_id, bias_for_small_BT=bias_for_small_BT)
+    main_folder = utils.create_save_folder()
+    utils.save_pickle(main_folder + f"/mini_config.pk", mini_config)
+    rng = np.random.default_rng(config["seed"])
+    # init
+    current_bts = sample_n_random_BTs(rng, n_tasks, config['random_sampling_config'])
+    bootstrap_evaluations = []
+    # main loop
+    for gen_id in range(n_gen):
+        print(f"Gen {gen_id}: {len(set([bt['bt'].to_txt() for bt in current_bts]))} different BTs.") 
+        config["save_folder"] = main_folder + f"/gen_{gen_id}/"
+        utils.create_folder(config["save_folder"])
+        config["tasks"] = create_tasks(current_bts, generation=["red", "blue"][gen_id%2])  # gen == atk means optimizing the reds and fixing the blues
+        me = MT_GAME(config)
+        if use_boostrap:
+          me.update_archive(bootstrap_evaluations)
+        # run gen
+        me.run()
+        # compute next gen 
+        elites = [{"fitness": None, "bt": None} for _ in range(n_tasks)]
+        if use_quality_only:
+            for task_id, archive in enumerate(me.archive.archives):
+                for cell_id in range(config["archive_config"]['n_cells']):
+                    if cell_id in archive.non_empty_cells:
+                        elites[task_id]["fitness"] = archive.cells_fitness[cell_id]
+                        elites[task_id]["bt"] = archive.cells_solution[cell_id]
+        else:  # Quality and Diversity
+            behaviors = jnp.concatenate([archive.cells_behavior[archive.non_empty_cells] for archive in me.archive.archives])
+            kmeans = KMeans(n_clusters=n_tasks).fit(preprocessing.normalize(behaviors))   # for normalized vectors euclidian distance is equivalent to cosine distance ||x-y||² = 2 (1 - x.y)
+            centroids = kmeans.cluster_centers_
+            tree = cKDTree(centroids)
+            elites_bt_txt = [""] * n_tasks
+            distances_to_centroids = np.ones(n_tasks) * np.inf
+            for task_id, archive in enumerate(me.archive.archives):
+                for cell_id in range(config["archive_config"]['n_cells']):
+                    if cell_id in archive.non_empty_cells:
+                        distance, c_id = tree.query(archive.cells_behavior[cell_id]/jnp.linalg.norm(archive.cells_behavior[cell_id]), k=1)
+                        if use_diversity_only:
+                            if distance < distances_to_centroids[c_id] and archive.cells_solution[cell_id]["bt"].to_txt() not in elites_bt_txt:
+                                distances_to_centroids[c_id] = distance 
+                                elites[c_id]["fitness"] = archive.cells_fitness[cell_id]
+                                elites[c_id]["bt"] = archive.cells_solution[cell_id]
+                                elites_bt_txt[c_id] = archive.cells_solution[cell_id]["bt"].to_txt()
+                        else:  # diversity and quality 
+                            if compare_fitness_bt(archive.cells_fitness[cell_id], elites[c_id]["fitness"]) and archive.cells_solution[cell_id]["bt"].to_txt() not in elites_bt_txt:
+                                elites[c_id]["fitness"] = archive.cells_fitness[cell_id]
+                                elites[c_id]["bt"] = archive.cells_solution[cell_id]
+                                elites_bt_txt[c_id] = archive.cells_solution[cell_id]["bt"].to_txt()
+        current_bts = [elite["bt"] for elite in elites if elite["bt"] is not None]
+        # compute tournament
+        if gen_id % 2 == 1:  # blues 
+            blues = current_bts
+            reds = [task for task in me.tasks] 
+        else:
+            reds = current_bts
+            blues = [task for task in me.tasks] 
+        utils.save_pickle(config["save_folder"] + f"elites_{gen_id}.pk", {"reds": reds, "blues": blues})
+        
+        # bootstrap next generation
+        if use_boostrap:
+            tournament = compute_tournament(config, reds, blues)
+            utils.save_pickle(config["save_folder"] + f"tournament_{gen_id}.pk", tournament)
+            bootstrap_evaluations = []
+            for (i,j), val in tournament.items():
+                if gen_id % 2 == 1:  # blues 
+                    solution = reds[i]
+                    f = [val["eval"]["fitness"][0], -solution["bt"].size]  # blue depleted health 
+                    task_id = j
+                else:
+                    solution = blues[j]
+                    f = [1-val["eval"]["other"][0], -solution["bt"].size]  # red depleted health
+                    task_id = i 
+                bootstrap_evaluations.append({"id": -1, "task_id": task_id, "fitness": f, "behavior": val["eval"]["behavior"], "solution": solution})
+        
+            F = make_tournament_plot(len(reds), len(blues), tournament, gen_id, config["save_folder"])
+            if do_mini_tournament:
+                mini_tournament_videos(config["save_folder"], mini_tournament_size, gen_id, tournament, F, n_groups, group_size, config["evaluation_config"]["fixed_starting_sector"], config["evaluation_config"]["fixed_unit_types"])
 
 # %% [markdown]
 # ## Intergenerational tournament
 
 # %%
-Elites = [utils.load_pickle(main_folder + f"/gen_{gen_id}/elites_{gen_id}.pk") for gen_id in range(n_gen)]
+if __name__ == "__main__":
+    Elites = [utils.load_pickle(main_folder + f"/gen_{gen_id}/elites_{gen_id}.pk") for gen_id in range(n_gen)]
+    
+    blues, reds = [], []
+    for gen_id in [i for i in range(0, n_gen, 2)]:
+        for blue in Elites[gen_id]["blues"]:
+            blues.append(blue)
+        for red in Elites[gen_id]["reds"]:
+            reds.append(red)
+    
+    config = get_config(parabellum_config, 0, None, n_cells=None, n_groups=n_groups, use_embedding=True)
+    tournament = compute_tournament(config, reds, blues)
+    utils.save_pickle(main_folder + f"generational_tournament.pk", tournament)
 
-blues, reds = [], []
-for gen_id in [i for i in range(0, n_gen, 2)]:
-    for blue in Elites[gen_id]["blues"]:
-        blues.append(blue)
-    for red in Elites[gen_id]["reds"]:
-        reds.append(red)
-
-config = get_config(parabellum_config, 0, None, n_cells=None, n_groups=n_groups, use_embedding=True)
-tournament = compute_tournament(config, reds, blues)
-utils.save_pickle(main_folder + f"generational_tournament.pk", tournament)
+# %%

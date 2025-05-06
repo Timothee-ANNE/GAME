@@ -36,8 +36,8 @@ def file_exist(path):
 
 
 # %%
-ROOT_PATH = "/home/" 
-print(f"Need to set a room path in utils.py to save data. Current: {ROOT_PATH }")
+ROOT_PATH = "" 
+print(f"Need to set a root path in Misc/utils.py to save data. Current: {ROOT_PATH }")
 
 def save(path, logs):
     with open(path+"/logs.pk", "wb") as f:

@@ -92,18 +92,28 @@ def init_state_factory(init_rng, env, n_bts):
 # ### make_init_scenario
 
 # %%
+building_color = jnp.array([201,199,198, 255])
+water_color = jnp.array([193, 237, 254, 255])
+forest_color = jnp.array([197,214,185, 255])
+empty_color = jnp.array([255, 255, 255, 255])
+
+def make_terrain(terrain_args, size):
+    args = {}
+    for key, config in terrain_args.items():
+        raster = np.zeros((size, size))
+        args[key] = jnp.array(raster.T)
+    basemap = jnp.where(args["building"][:,:,None], jnp.tile(building_color, (size, size, 1)), jnp.tile(empty_color, (size,size, 1)))
+    basemap = jnp.where(args["water"][:,:,None], jnp.tile(water_color, (size, size, 1)), basemap)
+    basemap = jnp.where(args["forest"][:,:,None], jnp.tile(forest_color, (size, size, 1)), basemap)
+    args["basemap"] = basemap
+    return tps.Terrain(**args)
+
 def make_init_scenario(env, max_map_targets, n_bts, places, movement_randomness = 5., units_push_back_firmness = 0.02,):
     # terrains 
     terrains = []
     for place in places:
-        if place in terrain_db.db:
-            terrain = terrain_db.make_terrain(terrain_db.db[place], env.size)
-        elif place in terrain_db.saved_data:
-            terrain = terrain_db.load_data(place)
-        elif place in terrain_db.homemade_maps:
-            terrain = terrain_db.load_homemade(place, env.size)
-        else:
-            terrain = geo.geography_fn(place, env.size)
+        assert place == "blank"
+        terrain = make_terrain({'building': None, 'water': None, 'forest': None}, env.size)
         terrains.append(terrain)
 
     unit_starting_sectors = jnp.zeros((n_bts, env.num_agents, env.size, env.size), dtype=jnp.int32)
