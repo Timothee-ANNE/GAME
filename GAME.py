@@ -755,6 +755,12 @@ def sample_random_bt(rng, max_leaves, max_depth, max_children):
         return child, {"type": "random"}
 
 def random_sampling(rng, config):
+    """
+    In Adversarial Coevolutionary Illumination with Generational Adversarial MAP-Elites, 
+    only the bt is evaluated; the unit_starting_sectors and unit_types pass through the 
+    variation operators but are not applied, and are replaced by fixed values. They are 
+    remnants of historical experiments that were kept intact to avoid incorporating bugs.
+    """
     bt, _ = sample_random_bt(rng, **config["bt"])
     n_groups = config["n_groups"]
     unit_starting_sectors = rng.random((n_groups, 4))
@@ -1066,7 +1072,7 @@ n_cells = 25  # 25
 
 use_boostrap = True
 bias_for_small_BT = True  # True for GAME-MO, False for GAME-SO
-use_embedding = True  # False for GAME (no VLM) 
+use_embedding = True  # False for GAME (no VEM) 
 use_diversity_only = False  
 use_quality_only = False 
 

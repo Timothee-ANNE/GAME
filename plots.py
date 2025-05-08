@@ -139,11 +139,11 @@ labels = {
     "full": "GAME-MO",
     "no_bootstrap": "GAME-MO (no bootstrap)", 
     "no_bias": "GAME-SO", 
-    "handcrafted_behavior": "GAME-MO (no VLM)",
+    "handcrafted_behavior": "GAME-MO (no VEM)",
     "diversity_only": "Diversity-only", 
     "quality_only": "Quality-only", 
 }
-pca_names = ["GAME-MO\n", "GAME-MO\n(no bootstrap)", "GAME-SO\n", "GAME-MO\n (no VLM)", "Diversity\nonly", "Quality\nonly"]
+pca_names = ["GAME-MO\n", "GAME-MO\n(no bootstrap)", "GAME-SO\n", "GAME-MO\n (no VEM)", "Diversity\nonly", "Quality\nonly"]
 
 # %%
 font = {'size'   : 18}
