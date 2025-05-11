@@ -13,12 +13,6 @@
 #     name: python3
 # ---
 
-# %% [raw]
-# SWARM for Strategic War Assitive Real-time Management 
-
-# %% [raw]
-# HMMMM = High-level Management for Massively Multi-agent Maneuvers
-
 # %% [markdown]
 # # import 
 
