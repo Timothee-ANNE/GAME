@@ -250,10 +250,6 @@ def get_js(videos):
     return js
 
 
-# %% [raw]
-# videos = [{"path": "banana.mp4", "title": "kiwi", "description": "papaya", "c_start":0, "c_end": 1, "r_start": 2, "r_end": 3}]
-# print(get_js(videos))
-
 # %%
 
 # %% [markdown]
