@@ -1,4 +1,3 @@
-.api_key*  # OpenAI API key
 data/
 **/cache/
 cache/
