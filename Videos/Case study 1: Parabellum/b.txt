@@ -1,0 +1,68 @@
+Video id: b
+Tournament id: 28761
+Red: fitness 45.83333206176758
+S        
+├── F    
+│   ├── C is_type grenadier
+│   └── S 
+│       ├── A attack random archer
+│       └── A heal random any
+├── S    
+│   ├── F 
+│   │   ├── S 
+│   │   │   ├── C is_dying self 25%
+│   │   │   └── C in_sight friend cavalry
+│   │   ├── A attack farthest any
+│   │   ├── A move away_from strongest foe spearmen
+│   │   ├── A go_to D 50%
+│   │   └── A attack weakest any
+│   └── S 
+│       ├── S 
+│       │   ├── A move away_from closest friend cavalry
+│       │   ├── F 
+│       │   │   ├── C is_dying friend 25%
+│       │   │   └── S 
+│       │   │       ├── C is_type cavalry
+│       │   │       └── A move away_from random friend cavalry
+│       │   └── A heal weakest any
+│       └── F 
+│           ├── C is_type healer
+│           ├── A go_to A 100%
+│           ├── C is_type grenadier
+│           └── S 
+│               ├── A attack closest archer
+│               └── C is_type archer
+└── C    in_reach foe me_from_them 0 spearmen
+
+used atomics: ['attack farthest any', 'attack random archer', 'move away_from closest friend cavalry', 'move away_from strongest foe spearmen', 'move away_from random friend cavalry', 'stand', 'go_to A 100%']
+
+Blue: fitness 61.432289123535156
+S        
+├── S    
+│   ├── S 
+│   │   ├── C is_type archer
+│   │   ├── A attack random any
+│   │   └── C in_sight foe any
+│   └── F 
+│       ├── F 
+│       │   ├── F 
+│       │   │   ├── C in_reach foe me_from_them 3 healer
+│       │   │   ├── A go_to A 50%
+│       │   │   ├── S 
+│       │   │   │   ├── A set_target A random foe grenadier
+│       │   │   │   ├── C in_reach foe them_from_me 2 any
+│       │   │   │   └── A heal random healer
+│       │   │   ├── C in_reach foe them_from_me 1 healer
+│       │   │   ├── C is_set_target A
+│       │   │   └── F 
+│       │   │       ├── C is_type cavalry
+│       │   │       └── C in_reach foe them_from_me 1 healer
+│       │   ├── S 
+│       │   │   ├── A set_target A weakest friend healer
+│       │   │   ├── A set_target E random foe spearmen
+│       │   │   └── A move away_from closest friend archer
+│       │   └── C is_type archer
+│       └── C is_dying friend 50%
+└── A    move toward farthest friend archer
+
+used atomics: ['attack random any', 'move away_from closest friend archer', 'go_to A 50%', 'set_target A weakest friend healer', 'set_target A random foe grenadier']

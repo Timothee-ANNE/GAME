@@ -1,0 +1,75 @@
+Video id: o
+Tournament id: 77984
+Red: fitness 60.88541793823242
+S        
+├── S    
+│   ├── F 
+│   │   ├── A attack farthest any
+│   │   ├── C in_sight friend healer
+│   │   └── A set_target A closest friend archer
+│   ├── A go_to A 100%
+│   └── C is_dying friend 25%
+└── F    
+    ├── A go_to A 100%
+    └── C is_dying foe 75%
+
+used atomics: ['attack farthest any', 'stand', 'go_to A 100%', 'set_target A closest friend archer']
+
+Blue: fitness 82.34374237060547
+S        
+├── S    
+│   ├── S 
+│   │   ├── C is_type archer
+│   │   ├── A attack random any
+│   │   ├── A heal farthest any
+│   │   └── S 
+│   │       ├── A go_to C 25%
+│   │       └── C is_dying self 50%
+│   └── F 
+│       ├── A move away_from closest friend cavalry
+│       ├── F 
+│       │   ├── F 
+│       │   │   ├── A go_to D 100%
+│       │   │   ├── A set_target C farthest friend spearmen
+│       │   │   ├── F 
+│       │   │   │   ├── A go_to E 50%
+│       │   │   │   └── C is_type cavalry
+│       │   │   └── A set_target B weakest friend cavalry
+│       │   ├── F 
+│       │   │   ├── A set_target A random foe grenadier
+│       │   │   └── S 
+│       │   │       ├── S 
+│       │   │       │   ├── A heal farthest healer
+│       │   │       │   └── F 
+│       │   │       │       ├── C in_sight friend grenadier
+│       │   │       │       ├── A move toward random foe grenadier
+│       │   │       │       └── S 
+│       │   │       │           ├── C is_type spearmen
+│       │   │       │           └── A attack strongest cavalry
+│       │   │       ├── F 
+│       │   │       │   ├── A attack closest grenadier
+│       │   │       │   └── F 
+│       │   │       │       ├── F 
+│       │   │       │       │   ├── A set_target C farthest friend spearmen
+│       │   │       │       │   ├── F 
+│       │   │       │       │   │   ├── C in_reach foe me_from_them 3 healer
+│       │   │       │       │   │   └── A go_to A 50%
+│       │   │       │       │   └── C is_dying friend 75%
+│       │   │       │       ├── C is_dying friend 25%
+│       │   │       │       └── A go_to D 100%
+│       │   │       ├── S 
+│       │   │       │   ├── C is_set_target D
+│       │   │       │   ├── A heal closest cavalry
+│       │   │       │   └── F 
+│       │   │       │       ├── A stand
+│       │   │       │       └── C in_reach friend me_from_them 3 archer
+│       │   │       └── S 
+│       │   │           ├── A heal strongest cavalry
+│       │   │           └── C in_sight friend any
+│       │   └── F 
+│       │       ├── C in_sight foe grenadier
+│       │       └── A move away_from farthest friend spearmen
+│       └── C in_reach foe me_from_them 0 cavalry
+└── C    is_type spearmen
+
+used atomics: ['attack random any', 'move toward random foe grenadier', 'move away_from farthest friend spearmen', 'stand', 'heal farthest healer', 'heal strongest cavalry', 'go_to A 50%', 'set_target A random foe grenadier']

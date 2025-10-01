@@ -1,0 +1,280 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.16.6
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
+
+# %% [markdown]
+# # import
+
+# %%
+from itertools import product
+import numpy as np 
+import pickle 
+import datetime
+import os
+import matplotlib.pyplot as plt
+import multiprocess as mp
+from tqdm import tqdm
+
+
+# %% [markdown]
+# # Save and Load
+
+# %%
+def file_exist(path):
+    return os.path.isfile(path)
+
+
+# %%
+ROOT_PATH = "" 
+print(f"Need to set a root path in Misc/utils.py to save data. Current: {ROOT_PATH }")
+
+def save(path, logs):
+    with open(path+"/logs.pk", "wb") as f:
+        pickle.dump(logs, f)
+
+def date(one_file=True):
+    now = datetime.datetime.now()
+    return now.strftime("%Y_%m_%d_%Hh%Mm%S") if one_file else now.strftime("%Y/%m/%d/%Hh%Mm%S")
+
+def create_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def create_save_folder(rootpath=None, verbose=True):
+    now = datetime.datetime.now()
+    timestamp = now.strftime("%Y/%m/%d/%Hh%Mm%Ss/")
+    save_path = (ROOT_PATH if rootpath is None else rootpath) + timestamp
+    if verbose:
+        print(save_path)
+    create_folder(save_path)
+    return save_path
+
+def load_pickle(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            res = pickle.load(f)
+        return res 
+    
+def save_pickle(path, data):
+    with open(path, "wb") as f:
+        pickle.dump(data, f)
+
+def tmp_save(X, name):
+    with open(ROOT_PATH + "tmp/"+name, "wb") as f:
+        pickle.dump(X, f)
+
+def tmp_load(name):
+    with open(ROOT_PATH + "tmp/"+name, "rb") as f:
+        X = pickle.load(f)
+    return X
+
+def savefig(name, rootpath=None, timestamp=True):
+    now = datetime.datetime.now()
+    save_path = (ROOT_PATH + "figures/"  + now.strftime("%Y/%m/%d/")) if rootpath is None else rootpath
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    if timestamp:
+        plt.savefig(f"{save_path}{name}_{now.strftime('%Hh%Mm%S')}.pdf")
+        plt.savefig(f"{save_path}{name}_{now.strftime('%Hh%Mm%S')}.png")
+    else:
+        plt.savefig(f"{save_path}{name}.pdf")
+        plt.savefig(f"{save_path}{name}.png") 
+
+
+# %% [markdown]
+# # Making Experiments
+
+# %%
+def create_arg(param, val):
+    if type(val) == list:
+        arg = f"-{param}"
+        for v in val:
+            arg += f" {v}"
+        return arg
+    else:
+        return f"-{param} {val}" 
+
+def create_args(params):
+    args = ""
+    for key, val in params.items():
+        args += create_arg(key, val) + " "
+    return args[:-1]
+
+
+def grid_search(parameters):
+    jobs = []
+    for vals in list(product( *tuple(vals for vals in parameters.values()) ) ):
+        params = {}
+        for i, key in enumerate(parameters.keys()):
+            params[key] = vals[i]
+        jobs.append(params)
+    return jobs 
+
+
+# %%
+#import secrets
+#seeds = [secrets.randbits(128) for i in range(10)]
+seeds = [145699129805780714613854406049835253522,
+ 296103101786929166832830061145188163074,
+ 203490607710899338157579999094757933386,
+ 235208199487805817202581366060900324255,
+ 5547172309044053904473589042118562201,
+ 76633485297319414372933736740609938107,
+ 170694809900299534689119182232847598921,
+ 162619748703940375346317088883570101415,
+ 98342501216433977472560033740846437437,
+ 261115144936125693506774563070030253841,
+ 141007450337199490634973117572339083593,
+ 159037483308978936036347865091781970021,
+ 45690743292834381586894827155466731701,
+ 90773045135946472605610848091286750702,
+ 5382412315871964536138619044462856397,
+ 174910660370010535892835915606129467631,
+ 249652015824472674893283049654838318682,
+ 48422777959834449496801276849211482000,
+ 322726107540611945252173971217098455728,
+ 316603286146853866055049874125632697961,
+ 107425450113285059483986822019951075265,
+ 185185664885436745963475208440412390685,
+ 190597973896166521424347815986659737637,
+ 102137662650420398785040281022797708031,
+ 97935317023371196323854632765977214751,
+ 8838361412768920055740725499490998940,
+ 69428924554502633397022666970874526211,
+ 261534520008109406325264201814836898350,
+ 102156399850701353535731780899744074178,
+ 232937430071393653876548192006416888624,
+ 7739660392771665472482764385147738912,
+ 50504960007281387623587212325408759066,
+ 314108484900805934443692303088239494449,
+ 8179804853170823420253215265712710585,
+ 149966358215434504994877404996183192928,
+ 81414633296641287731101508856135489408,
+ 210785326419422476022585127897548653373,
+ 225956444433874368776912240036424432704,
+ 116734812028439627557199082910087414883,
+ 76797337967080806860227247638095018680,
+ 331330308631479652518636089595549977620,
+ 322438681872211392016504683894315719678,
+ 230429855502960295005699027636767306860,
+ 23748743646980647781739039130295347469,
+ 147124664460597285203522473545066247260,
+ 139511348608688237496599537726722020101,
+ 242032876368112762801403401922465367205,
+ 29421942013476309287209140405698459084,
+ 16865174283949534397186074373979639194,
+ 314346208323302098882266181341499683013,
+ 19470697724797006752583169746843213344,
+ 185525358621825996901373740176694507457,
+ 102187790675568896238868571605755397282,
+ 243914640287845079393130197532174681370,
+ 151094755938699160658843502170803803081,
+ 327582359275647096347159078555979396955,
+ 31801364786618801971292371790060253855,
+ 198018112840791353328925972595356715711,
+ 82151562328265583741191735655792240634,
+ 143402524676415339656500148979574756192,
+ 55489046169160874774779936349899789783,
+ 324872757020503575049126253230805493483,
+ 140109748703584405545473264808864213248,
+ 227083753854305485285262456727779306453,
+ 28111098882376663913266285847340973589,
+ 231338193148013531113209727523672565826,
+ 112372930769809295267298549200577787303,
+ 190332108056753312093584676685430798175,
+ 335219488838207292947116925027482764327,
+ 195778261486731504944107843687780214296,
+ 38645286514136980804451113068708793604,
+ 220108589191620161067071337599083129101,
+ 183433521359745636333160757674410577012,
+ 23616175561336486016086389485461302727,
+ 202758023620117341384978743607700132810,
+ 188034544612268794386851274277539579184,
+ 122686954963857156881426471147091896049,
+ 209162256282631073223863795324774949514,
+ 101298854934108775008913563031035127078,
+ 311601618037257742852539971856827656383,
+ 201555411411208279646618349249025591743,
+ 80982514753260327651372730133181971018,
+ 284167008006588481885902376800818727970,
+ 138288859825578127283153702285462680181,
+ 308000845017592752213672789511566340845,
+ 85596533825512566895702389949344606184,
+ 83358336188372969759357648888965795568,
+ 325804385486169574788018331708157181600,
+ 218391500011394501998208559471219910005,
+ 37292853899949628816989692136953699599,
+ 314415729939807371022251864823055135797,
+ 105323637895526467023009779221725203055,
+ 306195896716479438174012147910710141244,
+ 86881400931345139477742528364051376777,
+ 237588740371186223801687647108252050136,
+ 314525068834737034536887763558964955707,
+ 42628678264364901269530021589589488966,
+ 29215385071511341546721284063596726488,
+ 103873178431983473710363753494329626172,
+ 117765220159828195042542576323060769887]
+
+
+# %% [markdown]
+# # General parralel worker
+
+# %%
+def make_general_jobs(foo, args):
+    jobs = []
+    for name, arg in args.items():
+        jobs.append((foo, name, arg))
+    return jobs
+
+def general_worker(job_queue, res_queue):
+    while True:
+        job = job_queue.get()
+        if job == "Done":
+            break
+        else:
+            f, name, arg = job
+            if type(arg) == tuple:
+                res_queue.put((name, f(*arg)))
+            elif type(arg) == dict:
+                res_queue.put((name, f(**arg)))
+            else:
+                res_queue.put(None)
+
+def general_master(jobs, n_processes=1, verbose=1):
+    if len(jobs) == 1:
+        for job in jobs:
+            f, name, arg = job
+            if type(arg) == tuple:
+                return {name: f(*arg)}
+            elif type(arg) == dict:
+                return {name: f(**arg)}
+            
+    job_queue = mp.Queue()
+    res_queue = mp.Queue()
+    n_processes = min(n_processes, len(jobs))
+    pool = mp.Pool(n_processes, general_worker, (job_queue, res_queue))
+
+    for job in jobs:
+        job_queue.put(job)
+
+    for _ in range(n_processes):
+        job_queue.put("Done")
+    
+    res = {}
+    for i in (tqdm(range(len(jobs)), smoothing=0.) if verbose else range(len(jobs))):
+        name, out = res_queue.get()
+        res[name] = out
+        
+    pool.terminate()
+    return res 

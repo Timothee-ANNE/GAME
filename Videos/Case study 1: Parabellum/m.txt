@@ -1,0 +1,47 @@
+Video id: m
+Tournament id: 14534
+Red: fitness 51.640625
+S        
+├── S    
+│   ├── F 
+│   │   ├── A attack farthest any
+│   │   ├── C in_sight friend healer
+│   │   └── C is_type archer
+│   ├── F 
+│   │   ├── A go_to A 100%
+│   │   ├── C is_dying foe 75%
+│   │   └── A move away_from closest friend cavalry
+│   └── C is_dying friend 25%
+└── A    move toward farthest friend archer
+
+used atomics: ['attack farthest any', 'move toward farthest friend archer', 'move away_from closest friend cavalry', 'stand', 'go_to A 100%']
+
+Blue: fitness 95.46875
+F        
+├── C    is_set_target E
+├── S    
+│   ├── F 
+│   │   ├── C in_reach foe them_from_me 0 archer
+│   │   ├── C in_sight foe spearmen
+│   │   ├── A go_to A 50%
+│   │   └── A heal weakest cavalry
+│   └── F 
+│       ├── S 
+│       │   ├── F 
+│       │   │   ├── C in_sight foe any
+│       │   │   ├── A set_target A strongest friend cavalry
+│       │   │   └── F 
+│       │   │       ├── C is_type healer
+│       │   │       ├── A attack closest archer
+│       │   │       └── A stand
+│       │   ├── A attack random any
+│       │   └── A attack farthest any
+│       └── F 
+│           ├── A move away_from strongest friend cavalry
+│           ├── A stand
+│           └── F 
+│               ├── C is_dying self 75%
+│               └── C in_sight foe cavalry
+└── A    heal weakest cavalry
+
+used atomics: ['attack random any', 'move away_from strongest friend cavalry', 'stand', 'heal weakest cavalry', 'go_to A 50%', 'set_target A strongest friend cavalry']
